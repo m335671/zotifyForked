@@ -283,12 +283,14 @@ class Content():
                 # do not copy file to sibling's path
                 sib.filepath = self.filepath
             else:
+                Printer.debug(f"{' > '.join(self.parent_tree)} has Sibling at {' > '.join(sib.parent_tree)}")
                 sib.filepath = check_path_dupes(sib.fill_output_template())
                 if Path(self.filepath).exists(): # SHOULD always be true
                     pathlike_move_safe(self.filepath, sib.filepath, copy=True)
                     if isinstance(sib, Track):
                         sib.set_audio_tags(sib.filepath)
                         sib.set_music_thumbnail(sib.filepath)
+                    Printer.debug(f"{self.filepath} Copied to Sibling at {sib.filepath}")
                 else:
                     Printer.hashtaged(PrintChannel.WARNING, f"SIBLING FAILED TO COPY METADATA\n" +
                                                             f'MISSING FILE EXPECTED AT PATH "{self.filepath}"')
@@ -910,6 +912,7 @@ class Track(DLContent):
             path = self.fill_output_template()
             if not self._in_dir_archive and not Zotify.CONFIG.get_disable_directory_archives():
                 path = check_path_dupes(path)  # same path, not same song_id, rename the newcomer
+                Printer.debug(f"Same Path, Not Same song_id, Renaming the New File Path to {path}")
             
             temppath = path.with_suffix(".tmp")
             if Zotify.CONFIG.get_temp_download_dir():
@@ -1214,8 +1217,9 @@ class Playlist(Container):
         self.printing_label = fix_filename(self.owner.name) + ' - ' + fix_filename(self.name)
         
         if TRACKS in playlist_resp and ITEMS in playlist_resp[TRACKS]:
-            tracks_or_eps: list[dict] = [item[TRACK] for item in playlist_resp[TRACKS][ITEMS]]
-            for track_or_ep, item in zip(tracks_or_eps, playlist_resp[TRACKS][ITEMS]):
+            items = [item for item in playlist_resp[TRACKS][ITEMS] if item[TRACK] is not None]
+            tracks_or_eps: list[dict] = [item[TRACK] for item in items]
+            for track_or_ep, item in zip(tracks_or_eps, items):
                 track_or_ep[ADDED_AT] = item[ADDED_AT]
                 track_or_ep[ADDED_BY] = item[ADDED_BY]
                 track_or_ep[IS_LOCAL] = item[IS_LOCAL]

@@ -51,7 +51,17 @@ def fix_filename(name: str | PurePath | Path ) -> str:
 def fix_filepath(path: PurePath, rel_to: PurePath) -> PurePath:
     """ Fix all parts of a filepath """
     fixed_parts = [fix_filename(part) for part in path.relative_to(rel_to).parts]
-    return rel_to / fixed_parts
+    
+    # maxlen = Zotify.CONFIG.get_max_filepath_length()
+    # fixed_parts.reverse()
+    # while len("/".join(fixed_parts)) > maxlen:
+    #     diff = len("/".join(fixed_parts)) - maxlen
+    #     trimmable = [p for p in fixed_parts if len(p) > 5]
+    #     name = trimmable[0][:max(5, len(trimmable[0]) - diff)]
+    #     fixed_parts[fixed_parts.index(trimmable[0])] = name
+    # fixed_parts.reverse()
+    
+    return rel_to.joinpath(fixed_parts)
 
 
 def walk_directory_for_tracks(path: str | PurePath) -> set[Path]:

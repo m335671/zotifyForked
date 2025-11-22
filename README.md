@@ -318,13 +318,19 @@ Increase Volume and Tempo by 50%                      :   `"-af volume=1.5,atemp
 
 ## Docker Usage
 
-### Build the docker image from the Dockerfile
+### Build a Docker Image from the Dockerfile
 
 `docker build -t zotify .`
 
-### Create and run a container from the image
+### Create and Run a Container from the Docker Image
 
-`docker run --rm -p 4381:4381 -v "$PWD/Zotify Music:/root/Music/Zotify Music" -v "$PWD/Zotify Podcasts:/root/Music/Zotify Podcasts" -it zotify`
+`docker run -it --rm -p 4381:4381 -v "$PWD/Zotify Music:/root/Music/Zotify Music" -v "$PWD/Zotify Podcasts:/root/Music/Zotify Podcasts" zotify`
+
+## Podman Usage
+
+`podman run -it --rm --name zotify --network=host -v "$PWD/Zotify Music:/root/Music/Zotify Music" -v "$PWD/Zotify Podcasts:/root/Music/Zotify Podcasts" zotify`
+
+(Recommended Additional Configs: `--cap-drop=ALL --security-opt=no-new-privileges`)
 
 ## Common Questions
 

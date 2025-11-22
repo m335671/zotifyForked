@@ -131,7 +131,6 @@ DEPRECIATED_CONFIGS = {
 
 class Config:
     Values = {}
-    logger = None
     
     @classmethod
     def load(cls, args) -> None:
@@ -193,19 +192,6 @@ class Config:
         for key in CONFIG_VALUES:
             if key.lower() in vars(args) and vars(args)[key.lower()] is not None:
                 cls.Values[key] = cls.parse_arg_value(key, vars(args)[key.lower()])
-        
-        # Handle sub-library logging
-        if cls.debug():
-            logfile = Path(cls.get_root_path()/f"zotify_DEBUG_{Zotify.DATETIME_LAUNCH}.log")
-            Printer.hashtaged(PrintChannel.DEBUG, f"{logfile.name} logging to {logfile.resolve().parent}")
-            logging.basicConfig(level=logging.DEBUG, filemode="x", filename=logfile)
-            cls.logger = logging.getLogger("zotify.debug")
-        else:
-            logfile = PurePath(cls.get_root_path()/f"zotify_{Zotify.DATETIME_LAUNCH}.log")
-            logging.basicConfig(level=logging.CRITICAL, filemode="x", filename=logfile)
-            # mutedLoggers = {"Librespot:Session", "Librespot:AudioKeyManager", "librespot.audio", "Librespot:CdnManager"}
-            # for logger in mutedLoggers:
-            #     logging.getLogger(logger).disabled = True
         
         # Confirm regex patterns
         if cls.get_regex_enabled():
@@ -609,16 +595,26 @@ class Config:
 
 
 class Zotify:
-    SESSION: Session     = None
-    DOWNLOAD_QUALITY     = None
-    DOWNLOAD_BITRATE     = None
-    DATETIME_LAUNCH: str = None
-    TOTAL_API_CALLS: int = None
-    CONFIG: Config       = Config()
+    SESSION: Session       = None
+    DOWNLOAD_QUALITY       = None
+    DOWNLOAD_BITRATE       = None
+    DATETIME_LAUNCH: str   = None
+    LOGFILE: Path          = None
+    LOGGER: logging.Logger = None
+    TOTAL_API_CALLS: int   = None
+    CONFIG: Config         = Config()
     
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         Zotify.start()
         Zotify.CONFIG.load(args)
+        
+        # Handle sub-library logging
+        Zotify.LOGFILE = Path(Zotify.CONFIG.get_root_path() / 
+                         ("zotify_" + ("DEBUG_" if Zotify.CONFIG.debug() else "") + f"{Zotify.DATETIME_LAUNCH}.log"))
+        Zotify.logger = logging.getLogger("zotify.debug")
+        Printer.hashtaged(PrintChannel.DEBUG, f"{Zotify.LOGFILE.name} logging to {Zotify.LOGFILE.resolve().parent}")
+        logging.basicConfig(level=logging.DEBUG if Zotify.CONFIG.debug() else logging.CRITICAL,
+                            filemode="x", filename=Zotify.LOGFILE)
         
         with Loader(PrintChannel.MANDATORY, "Logging in..."):
             Zotify.login(args)
@@ -627,7 +623,6 @@ class Zotify:
         quality, bitrate = self.get_download_quality(Zotify.CONFIG.get_download_qual_pref())
         Zotify.DOWNLOAD_QUALITY = quality
         Zotify.DOWNLOAD_BITRATE = bitrate
-    
     
     @classmethod
     def start(cls) -> None:
@@ -833,12 +828,11 @@ class Zotify:
         logging.shutdown()
         
         # delete non-debug logfiles if empty (no critical errors)
-        logfile = Path(Zotify.CONFIG.get_root_path()/f"zotify_{Zotify.DATETIME_LAUNCH}.log")
-        if logfile.exists():
-            with open(logfile) as file:
+        if Zotify.LOGFILE.exists():
+            with open(Zotify.LOGFILE) as file:
                 lines = file.readlines()
             if not lines:
-                logfile.unlink()
+                Zotify.LOGFILE.unlink()
         
         for dir in (Path(Zotify.CONFIG.get_root_path()), Path(Zotify.CONFIG.get_root_podcast_path())):
             for tempfile in dir.glob("*.tmp"):

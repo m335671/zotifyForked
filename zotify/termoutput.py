@@ -65,18 +65,18 @@ class Printer:
         if channel not in {PrintChannel.WARNING, PrintChannel.ERROR, PrintChannel.API_ERROR, PrintChannel.DEBUG,}:
             return
         from zotify.config import Zotify
-        if Zotify.CONFIG.logger:
+        if Zotify.LOGGER:
             if isinstance(msg, BaseException):
                 msg = "".join(TracebackException.from_exception(msg).format())
             elif isinstance(msg, dict):
                 msg = pformat(msg, indent=2)
             msg = "\n\n" + msg.strip() + "\n"
             if channel is PrintChannel.WARNING:
-                Zotify.CONFIG.logger.warning(msg)
+                Zotify.LOGGER.warning(msg)
             elif channel in {PrintChannel.ERROR, PrintChannel.API_ERROR}:
-                Zotify.CONFIG.logger.error(msg)
+                Zotify.LOGGER.error(msg)
             elif channel is PrintChannel.DEBUG:
-                Zotify.CONFIG.logger.debug(msg)
+                Zotify.LOGGER.debug(msg)
     
     @staticmethod
     def _api_shrink(obj: list | tuple | dict) -> dict:
