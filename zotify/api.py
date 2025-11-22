@@ -175,6 +175,10 @@ class Content():
             return self._parent.parent_tree + [self]
         return [self]
     
+    @property
+    def parent_tree_str(self) -> list[str]:
+        return ' -> '.join([c._clsn for c in self.parent_tree])
+    
     def _cache_children(self, children: set[Content | Container]):
         childContent = {child for child in children if not isinstance(child, Container)}
         self.query._allContent.update(childContent)
@@ -283,7 +287,7 @@ class Content():
                 # do not copy file to sibling's path
                 sib.filepath = self.filepath
             else:
-                Printer.debug(f"{' > '.join(self.parent_tree)} has Sibling at {' > '.join(sib.parent_tree)}")
+                Printer.debug(f"{self.parent_tree_str} has Sibling at {sib.parent_tree_str}")
                 sib.filepath = check_path_dupes(sib.fill_output_template())
                 if Path(self.filepath).exists(): # SHOULD always be true
                     pathlike_move_safe(self.filepath, sib.filepath, copy=True)
