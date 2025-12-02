@@ -61,7 +61,7 @@ def fix_filepath(path: PurePath, rel_to: PurePath) -> PurePath:
     #     fixed_parts[fixed_parts.index(trimmable[0])] = name
     # fixed_parts.reverse()
     
-    return rel_to.joinpath(fixed_parts)
+    return rel_to.joinpath(*fixed_parts)
 
 
 def walk_directory_for_tracks(path: str | PurePath) -> set[Path]:
