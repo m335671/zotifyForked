@@ -61,7 +61,7 @@ class Printer:
         return columns
     
     @staticmethod
-    def logger(msg: str | dict, channel: PrintChannel) -> None:
+    def logger(msg: str | dict, channel: PrintChannel | None = None) -> None:
         if channel in {PrintChannel.LOADER}:
             return
         from zotify.config import Zotify

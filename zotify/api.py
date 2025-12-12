@@ -529,7 +529,7 @@ class DLContent(Content):
 
 
 class Track(DLContent):
-    def __init__(self, id_or_uri: str, parent: Content | Container = None):
+    def __init__(self, id_or_uri: str, parent: Content | Container = None) -> None:
         super().__init__(id_or_uri, parent)
         self._regex_flag = Zotify.CONFIG.get_regex_track()
         self._codecs = CODEC_MAP_TRACK
@@ -555,7 +555,7 @@ class Track(DLContent):
     def dashboard(self, suppress_id: bool = False) -> str:
         return super().dashboard(["track_number", "artists", "album"], suppress_id=suppress_id)
     
-    def parse_metadata(self, track_resp: dict[str, str | int | bool]):
+    def parse_metadata(self, track_resp: dict[str, str | int | bool]) -> None:
         self.update_id(track_resp[ID])
         self.name: str = track_resp[NAME]
         self.disc_number = str(track_resp[DISC_NUMBER])
@@ -585,8 +585,8 @@ class Track(DLContent):
         self.hasMetadata = True
     
     def compare_metadata(self):
-        """ Compares metadata in self (just fetched) against metadata on file (at self.filepath),
-        returns Truthy value if discrepancy is found """
+        # Compares metadata in self (just fetched) against metadata on file (at self.filepath),
+        # returns Truthy value if discrepancy is found
         
         reliable_tags = (
             conv_artist_format(self.artists), conv_genre_format(self.genres), self.name, self.album.name, 
@@ -637,7 +637,7 @@ class Track(DLContent):
         
         return mismatches
     
-    def verify_metadata(self):
+    def verify_metadata(self) -> None:
         """Overwrite metadata on file (at self.filepath) with current metadata if necessary"""
         
         mismatches = self.compare_metadata()
@@ -770,8 +770,9 @@ class Track(DLContent):
         except ValueError:
             Printer.hashtaged(PrintChannel.SKIPPING, f'LYRICS FOR "{self.printing_label}" (LYRICS NOT AVAILABLE)')
     
-    def get_audio_tags(self) -> tuple[tuple, dict]:
-        tags = music_tag.load_file(self.filepath)
+    @staticmethod
+    def parse_audio_tags(filepath: PurePath) -> tuple[tuple, dict]:
+        tags = music_tag.load_file(filepath)
         
         artists = conv_artist_format(tags[ARTIST].values)
         genres = conv_genre_format(tags[GENRE].values)
@@ -784,9 +785,9 @@ class Track(DLContent):
         
         unreliable_tags = [TOTALTRACKS, TOTALDISCS, COMPILATION, LYRICS]
         custom_tags = ["trackid"]
-        if self.filepath.suffix.lower() == ".mp3":
+        if filepath.suffix.lower() == ".mp3":
             formatted_custom_tags = [MP3_CUSTOM_TAG_PREFIX + tag.upper() for tag in custom_tags]
-        elif self.filepath.suffix.lower() == ".m4a":
+        elif filepath.suffix.lower() == ".m4a":
             formatted_custom_tags = [M4A_CUSTOM_TAG_PREFIX + tag for tag in custom_tags]
         else:
             formatted_custom_tags = custom_tags.copy()
@@ -832,7 +833,10 @@ class Track(DLContent):
         return (artists, genres, track_name, album_name, album_artist, release_year, disc_number, track_number), \
                 utag_vals
     
-    def set_audio_tags(self, path: PurePath):
+    def get_audio_tags(self) -> tuple[tuple, dict]:
+        return self.parse_audio_tags(self.filepath)
+    
+    def set_audio_tags(self, path: PurePath) -> None:
         
         def custom_mp3_tag(audio_file: music_tag.AudioFile, tag: str, val: str):
             from mutagen.id3 import TXXX
@@ -891,7 +895,7 @@ class Track(DLContent):
         
         tags.save()
     
-    def set_music_thumbnail(self, path: PurePath):
+    def set_music_thumbnail(self, path: PurePath) -> None:
         # jpeg format expected from request
         img = requests.get(self.album.image_url).content
         tags: music_tag.AudioFile = music_tag.load_file(path)
@@ -917,7 +921,7 @@ class Track(DLContent):
         
         return self.skippable
     
-    def download(self, pbar_stack: list):
+    def download(self, pbar_stack: list) -> None:
         if self.downloaded:
             Printer.hashtaged(PrintChannel.SKIPPING, f'"{self.printing_label}" ({self.clsn.upper()} ALREADY DOWNLOADED THIS SESSION)')
             return
@@ -1526,7 +1530,7 @@ class Query(Container):
             direct_req_item_resps.append(item_resps)
         return direct_reqs_objs, direct_req_item_resps
     
-    def parse_direct_metadata(self, direct_reqs_objs: list[list[DLContent | Container]], direct_req_item_resps: list[list[dict]]):
+    def parse_direct_metadata(self, direct_reqs_objs: list[list[DLContent | Container]], direct_req_item_resps: list[list[dict]]) -> None:
         """ This sets self.requested_objs (Query's name for self.extChildren) """
         for objs, item_resps in zip(direct_reqs_objs, direct_req_item_resps):
             if not objs:
@@ -1602,7 +1606,7 @@ class Query(Container):
         if allpaths:
             return get_common_dir(allpaths)
     
-    def create_m3u8_playlists(self, force_path: PurePath | None = None, force_name: str = "", append: list[str] | None = None):        
+    def create_m3u8_playlists(self, force_path: PurePath | None = None, force_name: str = "", append: list[str] | None = None) -> None:        
         for obj_list in self.requested_objs:
             if not obj_list:
                 continue
@@ -1790,7 +1794,7 @@ class LikedSong(UserItem):
         
         def find_sync_point(liked_tracks: list[Track], m3u8_entry_path: str) -> int | None:
             for i, liked_track in enumerate(liked_tracks):
-                Printer.new_print(PrintChannel.MANDATORY, f"{liked_track.filepath} == {m3u8_entry_path}")
+                Printer.logger(f"{liked_track.filepath} == {m3u8_entry_path}")
                 if str(liked_track.filepath) == m3u8_entry_path:
                     return i
                 elif str(liked_track.filepath) in m3u8_entry_path:

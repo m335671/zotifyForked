@@ -272,10 +272,8 @@ def upgrade_legacy_archive(entries: list[str], archive_path: PurePath) -> None:
         
         rewrite_legacy = True
         path_entry = filename_or_path
-        test_track = Track(entry_items[0])
         for glob_path in Path(Zotify.CONFIG.get_root_path()).glob('**/' + str(filename_or_path)):
-            test_track.filepath = PurePath(glob_path)
-            reliable_tags, unreliable_tags = test_track.get_audio_tags()
+            reliable_tags, unreliable_tags = Track.parse_audio_tags(PurePath(glob_path))
             if ("trackid" in unreliable_tags and unreliable_tags["trackid"] == entry_items[0]
             or  unconv_artist_format(reliable_tags[0])[0] == entry_items[2]
             or  reliable_tags[2] == entry_items[3]):
