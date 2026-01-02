@@ -109,38 +109,17 @@ PERSISTED_QUERY = '{"persistedQuery":{"version":1,"sha256Hash":"224ba0fd89fcfdfb
 STREAMABLE_PODCAST = 'anon-podcast.scdn.co'
 
 # API Scopes
-PLAYLIST_READ_PRIVATE = 'playlist-read-private'
-USER_FOLLOW_READ = 'user-follow-read'
-USER_LIBRARY_READ = 'user-library-read'
-USER_READ_EMAIL = 'user-read-email'
 SCOPES = [
-    "app-remote-control",
-    "playlist-modify",
-    "playlist-modify-private",
-    "playlist-modify-public",
-    "playlist-read",
-    "playlist-read-collaborative",
-    "playlist-read-private",
     "streaming",
-    "ugc-image-upload",
-    "user-follow-modify",
+    "playlist-read-private",
+    "playlist-read-collaborative",
     "user-follow-read",
-    "user-library-modify",
-    "user-library-read",
-    "user-modify",
-    "user-modify-playback-state",
-    "user-modify-private",
-    "user-personalized",
-    "user-read-birthdate",
-    "user-read-currently-playing",
-    "user-read-email",
-    "user-read-play-history",
     "user-read-playback-position",
-    "user-read-playback-state",
-    "user-read-private",
-    "user-read-recently-played",
     "user-top-read",
-]
+    "user-read-recently-played",
+    "user-library-read",
+    "user-read-email",
+    "user-read-private"]
 
 # System Constants
 LINUX_SYSTEM = 'Linux'

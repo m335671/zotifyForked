@@ -74,6 +74,10 @@ def main():
                         type=str,
                         dest='token',
                         help='Authentication token')
+    parser.add_argument('--client-id',
+                        type=str,
+                        dest='client_id',
+                        help='Client ID for a Developer App to reroute metadata API requests through')
     
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('urls',

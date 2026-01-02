@@ -595,6 +595,7 @@ class Config:
 
 
 class Zotify:
+    OAUTH: OAuth           = None
     SESSION: Session       = None
     DOWNLOAD_QUALITY       = None
     DOWNLOAD_BITRATE       = None
@@ -637,18 +638,31 @@ class Zotify:
     def login(cls, args):
         """ Authenticates and saves credentials to a file """
         
-        session_builder = Session.Builder() # stored_credentials_file == True by default
+        session_builder = Session.Builder() # stored_credentials == True by default
         session_builder.conf.store_credentials = False
         
-        if Zotify.CONFIG.get_save_credentials():
-            creds = cls.CONFIG.get_credentials_location()
-            session_builder.conf.stored_credentials_file = str(creds)
-            if creds and Path(creds).exists():
-                cls.SESSION = Session.Builder().stored_file(creds).create()
-                return
+        # login via saved credentials
+        cred_path = cls.CONFIG.get_credentials_location()
+        if Zotify.CONFIG.get_save_credentials() and Path(cred_path).exists():
+            with open(cred_path, 'r',) as f:
+                creds = json.load(f)
+            if creds["type"] == OAuth.OAUTH_PKCE_TOKEN:
+                cls.OAUTH = OAuth(creds["client_id"], "", None).ingest_token_response(creds)
+                try:
+                    cls.OAUTH.refresh_token()
+                    cls.OAUTH.save_creds(cred_path)
+                    session_builder.login_credentials = cls.OAUTH.get_credentials()
+                    cls.SESSION = session_builder.create()
+                    return
+                except RuntimeError:
+                    Printer.hashtaged(PrintChannel.MANDATORY, f"Login via saved OAuth credentials failed! Falling back to interactive login")
+                    # Path(cred_path).unlink()
             else:
-                session_builder.conf.store_credentials = True
+                session_builder.stored_file(cred_path)
+                cls.SESSION = session_builder.create()
+                return
         
+        # login via commandline args (login5 token only)
         if args.username not in {None, ""} and args.token not in {None, ""}:
             try:
                 auth_obj = {"username": args.username,
@@ -660,12 +674,21 @@ class Zotify:
             except:
                 Printer.hashtaged(PrintChannel.MANDATORY, f"Login via commandline args failed! Falling back to interactive login")
         
-        def oauth_print(url):
-            Printer.new_print(PrintChannel.MANDATORY, f"Click on the following link to login:\n{url}")
-        
+        # interactive OAuth login
         port = 4381
         redirect_url = f"http://{cls.CONFIG.get_oauth_address()}:{port}/login"
-        session_builder.login_credentials = OAuth(MercuryRequests.keymaster_client_id, redirect_url, oauth_print).flow()
+        client_id = args.client_id if args.client_id not in {None, ""} else MercuryRequests.keymaster_client_id
+        def oauth_print(url):
+            Printer.new_print(PrintChannel.MANDATORY, f"Click on the following link to login:\n{url}")
+        oauth = OAuth(client_id, redirect_url, oauth_print).set_scopes(SCOPES).set_listen_all(True)
+        session_builder.login_credentials = oauth.flow()
+        if Zotify.CONFIG.get_save_credentials():
+            if client_id != MercuryRequests.keymaster_client_id:
+                cls.OAUTH = oauth
+                oauth.save_creds(cred_path)
+            else:
+                session_builder.conf.store_credentials = True
+                session_builder.conf.stored_credentials_file = str(cred_path)
         cls.SESSION = session_builder.create()
         return
     
@@ -741,11 +764,15 @@ class Zotify:
         return
     
     @classmethod
+    def choose_token(cls):
+        if cls.OAUTH:
+            return cls.OAUTH.token() # Developer API
+        return cls.SESSION.tokens().get_token(*SCOPES).access_token # login5
+    
+    @classmethod
     def invoke_url(cls, url: str, params: dict | None = None, expectFail: bool = False) -> tuple[str, dict]:
-        scopes = USER_READ_EMAIL, PLAYLIST_READ_PRIVATE, USER_LIBRARY_READ, USER_FOLLOW_READ
-        token = cls.SESSION.tokens().get_token(scopes).access_token
         headers = {
-            'Authorization': f'Bearer {token}',
+            'Authorization': f'Bearer {cls.choose_token()}',
             'Accept-Language': f'{cls.CONFIG.get_language()}',
             'Accept': 'application/json',
             'app-platform': 'WebPlayer',

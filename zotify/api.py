@@ -88,7 +88,7 @@ def fetch_search_display(search_query: str) -> list[str]:
         if item_type not in items or not len(items[item_type]):
             continue
         
-        resps: list[dict] = items[item_type]
+        resps: list[dict] = [i for i in items[item_type] if i is not None]
         counter = len(search_result_uris) + 1
         if item_type == TRACKS:
             data = [ [resps.index(t) + counter,

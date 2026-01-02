@@ -78,13 +78,14 @@ If an artist's URL is given, all albums by the specified artist will be download
 | `--persist`                         | Perform multiple Queries on the same Session, requiring only one account login                                 |
 | `--update-config`                   | Updates the `config.json` file while keeping all current settings unchanged                                    |
 | `--update-archive`                  | Updates the `.song_archive` file entries with full paths while keeping non-findable entries unchanged          |
-| `--debug`                           | Enable debug mode, printing extra information and creating a `config_DEBUG.json` file                         |
+| `--debug`                           | Enable debug mode, printing extra information and creating a `config_DEBUG.json` file                          |
 
 | Command Line Config Flag            | Value                                                                                                          |
 |-------------------------------------|----------------------------------------------------------------------------------------------------------------|
 | `-c`, `--config-location`           | Specify a directory containing a Zotify `config.json` file (or a filepath to a `.json` file) to load settings  |
 | `-u`, `--username`                  | Account username                                                                                               |
 | `--token`                           | Authentication token                                                                                           |
+| `--client_id`                       | Client ID for a Developer App to reroute metadata API requests through                                         |
 
 | Command Line Mode Flag (exclusive)  | Mode                                                                                                           |
 |-------------------------------------|----------------------------------------------------------------------------------------------------------------|
