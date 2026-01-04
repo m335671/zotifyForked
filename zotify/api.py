@@ -1642,7 +1642,7 @@ class Query(Container):
                     return fix_filename(force_name)
             
             for obj, content_list in zip(obj_list, content_lists):
-                name = f'"{obj.name}"' if isinstance(obj, Container) else obj.caps
+                name = f'"{obj.name}"' if isinstance(obj, Container) else obj.uppers
                 
                 if not content_list:
                     # only possible for childless Container 
@@ -1764,7 +1764,7 @@ class UserItem(Query):
     
     def display_select_user_items(self, user_item_resps: list[None | dict]) -> list[dict]:
         display_list = [[i+1, str(resp.get(self.inner_stripper, resp)[NAME])] for i, resp in enumerate(user_item_resps)]
-        Printer.table(self.caps, ('ID', 'Name'), [[0, f"ALL {self.caps}"]] + display_list)
+        Printer.table(self.uppers, ('ID', 'Name'), [[0, f"ALL {self.uppers}"]] + display_list)
         selected_item_resps: list[None | dict] = select([None] + user_item_resps, first_ID=0)
         
         if selected_item_resps[0] == None:
