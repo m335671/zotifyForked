@@ -737,15 +737,10 @@ class Track(DLContent):
                 else:
                     raise ValueError('UNKNOWN SYNC TYPE')
                 
-                lrc_header = [f"[ti: {self.name}]\n",
-                              f"[ar: {conv_artist_format(self.artists, FORCE_NO_LIST=True)}]\n",
-                              f"[al: {self.album.name}]\n",
-                              f"[length: {self.duration_ms // 60000}:{(self.duration_ms % 60000) // 1000}]\n",
-                              f"[by: Zotify v{__version__}]\n",
-                              "\n"]
                 self.lyrics = lyrics
         except ValueError as e:
             Printer.hashtaged(PrintChannel.SKIPPING, f'LYRICS FOR "{self.printing_label}" ({e.args[0]})')
+            return
         
         if Zotify.CONFIG.get_lyrics_to_file():
             lyricdir = Zotify.CONFIG.get_lyrics_location()
@@ -757,8 +752,14 @@ class Track(DLContent):
             
             with open(lyricdir / f"{lrc_filename}.lrc", 'w', encoding='utf-8') as file:
                 if Zotify.CONFIG.get_lyrics_header():
+                    lrc_header = [f"[ti: {self.name}]\n",
+                                  f"[ar: {conv_artist_format(self.artists, FORCE_NO_LIST=True)}]\n",
+                                  f"[al: {self.album.name}]\n",
+                                  f"[length: {self.duration_ms // 60000}:{(self.duration_ms % 60000) // 1000}]\n",
+                                  f"[by: Zotify v{__version__}]\n",
+                                  "\n"]
                     file.writelines(lrc_header)
-                file.writelines(lyrics)
+                file.writelines(self.lyrics)
     
     @staticmethod
     def parse_audio_tags(filepath: PurePath) -> tuple[tuple, dict]:
