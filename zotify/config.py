@@ -76,26 +76,27 @@ CONFIG_VALUES = {
     M3U8_REL_PATHS:             { 'default': 'True',                    'type': bool,   'arg': ('--m3u8-relative-paths'                  ,) },
     LIKED_SONGS_ARCHIVE_M3U8:   { 'default': 'True',                    'type': bool,   'arg': ('--liked-songs-archive-m3u8'             ,) },
     
-    # Lyric File Options
-    DOWNLOAD_LYRICS:            { 'default': 'True',                    'type': bool,   'arg': ('--download-lyrics'                      ,) },
+    # Lyrics Options
+    LYRICS_TO_METADATA:         { 'default': 'True',                    'type': bool,   'arg': ('--lyrics-to-metadata'                   ,) },
+    LYRICS_TO_FILE:             { 'default': 'True',                    'type': bool,   'arg': ('--lyrics-to-file'                       ,) },
     LYRICS_LOCATION:            { 'default': '',                        'type': str,    'arg': ('--lyrics-location'                      ,) },
-    LYRICS_FILENAME:            { 'default': '{artist}_{song_name}',    'type': str,    'arg': ('--lyrics-filename'                      ,) },
+    OUTPUT_LYRICS:              { 'default': '{artist}_{song_name}',    'type': str,    'arg': ('-oy', '--output-lyrics'                 ,) },
     ALWAYS_CHECK_LYRICS:        { 'default': 'False',                   'type': bool,   'arg': ('--always-check-lyrics'                  ,) },
     LYRICS_MD_HEADER:           { 'default': 'False',                   'type': bool,   'arg': ('--lyrics-md-header'                     ,) },
     
     # Metadata Options
+    BYPASS_MD_API:              { 'default': 'False',                   'type': bool,   'arg': ('--bypass-metadata-api'                  ,) },
     LANGUAGE:                   { 'default': 'en',                      'type': str,    'arg': ('--language'                             ,) },
-    STRICT_LIBRARY_VERIFY:      { 'default': 'True',                    'type': bool,   'arg': ('--strict-library-verify'                ,) },
     MD_DISC_TRACK_TOTALS:       { 'default': 'True',                    'type': bool,   'arg': ('--md-disc-track-totals'                 ,) },
     MD_SAVE_GENRES:             { 'default': 'True',                    'type': bool,   'arg': ('--md-save-genres'                       ,) },
     MD_ALLGENRES:               { 'default': 'False',                   'type': bool,   'arg': ('--md-allgenres'                         ,) },
     MD_GENREDELIMITER:          { 'default': ', ',                      'type': str,    'arg': ('--md-genredelimiter'                    ,) },
     MD_ARTISTDELIMITER:         { 'default': ', ',                      'type': str,    'arg': ('--md-artistdelimiter'                   ,) },
-    MD_SAVE_LYRICS:             { 'default': 'True',                    'type': bool,   'arg': ('--md-save-lyrics'                       ,) },
+    SEARCH_QUERY_SIZE:          { 'default': '10',                      'type': str,    'arg': ('--search-query-size'                    ,) },
+    STRICT_LIBRARY_VERIFY:      { 'default': 'True',                    'type': bool,   'arg': ('--strict-library-verify'                ,) },
     ALBUM_ART_JPG_FILE:         { 'default': 'False',                   'type': bool,   'arg': ('--album-art-jpg-file'                   ,) },
     
     # API Options
-    SEARCH_QUERY_SIZE:          { 'default': '10',                      'type': str,    'arg': ('--search-query-size'                    ,) },
     RETRY_ATTEMPTS:             { 'default': '1',                       'type': int,    'arg': ('--retry-attempts'                       ,) },
     CHUNK_SIZE:                 { 'default': '20000',                   'type': int,    'arg': ('--chunk-size'                           ,) },
     REDIRECT_ADDRESS:           { 'default': '127.0.0.1',               'type': str,    'arg': ('--redirect-address'                     ,) },
@@ -119,13 +120,16 @@ CONFIG_VALUES = {
 
 
 DEPRECIATED_CONFIGS = {
-    "SONG_ARCHIVE":               { 'default': '',                        'type': str,    'arg': ('--song-archive'                         ,) },
-    "OVERRIDE_AUTO_WAIT":         { 'default': 'False',                   'type': bool,   'arg': ('--override-auto-wait'                   ,) },
-    "REDIRECT_URI":               { 'default': '127.0.0.1:4381',          'type': str,    'arg': ('--redirect-uri'                         ,) },
-    "OAUTH_ADDRESS":              { 'default': '0.0.0.0',                 'type': str,    'arg': ('--oauth-address'                        ,) },
-    OUTPUT_PLAYLIST:              { 'default': '{playlist}/{artist}_{song_name}',
+    "SONG_ARCHIVE":             { 'default': '',                        'type': str,    'arg': ('--song-archive'                         ,) },
+    "OVERRIDE_AUTO_WAIT":       { 'default': 'False',                   'type': bool,   'arg': ('--override-auto-wait'                   ,) },
+    "REDIRECT_URI":             { 'default': '127.0.0.1:4381',          'type': str,    'arg': ('--redirect-uri'                         ,) },
+    "OAUTH_ADDRESS":            { 'default': '0.0.0.0',                 'type': str,    'arg': ('--oauth-address'                        ,) },
+    "OUTPUT_PLAYLIST":          { 'default': '{playlist}/{artist}_{song_name}',
                                   'type': str, 
                                   'arg': ('-op', '--output-playlist' ,) },
+    "DOWNLOAD_LYRICS":          { 'default': 'True',                    'type': bool,   'arg': ('--download-lyrics'                      ,) },
+    "LYRICS_FILENAME":          { 'default': '{artist}_{song_name}',    'type': str,    'arg': ('--lyrics-filename'                      ,) },
+    "MD_SAVE_LYRICS":           { 'default': 'True',                    'type': bool,   'arg': ('--md-save-lyrics'                       ,) },
 }
 
 
@@ -339,10 +343,6 @@ class Config:
         return cls.get(DOWNLOAD_FORMAT)
     
     @classmethod
-    def get_download_lyrics(cls) -> bool:
-        return cls.get(DOWNLOAD_LYRICS)
-    
-    @classmethod
     def get_bulk_wait_time(cls) -> int:
         return cls.get(BULK_WAIT_TIME)
     
@@ -424,19 +424,6 @@ class Config:
         return cls.get(DISABLE_SONG_ARCHIVE)
     
     @classmethod
-    def get_lyrics_location(cls) -> PurePath | None:
-        if cls.get(LYRICS_LOCATION) == '':
-            # Use OUTPUT path as default location
-            return None
-        else:
-            lyrics_path = cls.get(LYRICS_LOCATION)
-            if lyrics_path[0] == ".":
-                lyrics_path = cls.get_root_path() / PurePath(lyrics_path).relative_to(".")
-            lyrics_path = PurePath(Path(lyrics_path).expanduser())
-        
-        return lyrics_path
-    
-    @classmethod
     def get_ffmpeg_log_level(cls) -> str:
         level = cls.get(FFMPEG_LOG_LEVEL)
         # see https://ffmpeg.org/ffmpeg.html#Generic-options, -loglevel
@@ -449,24 +436,8 @@ class Config:
         return level
     
     @classmethod
-    def get_show_download_pbar(cls) -> bool:
-        return cls.get(PRINT_DOWNLOAD_PROGRESS)
-    
-    @classmethod
-    def get_show_url_pbar(cls) -> bool:
-        return cls.get(PRINT_URL_PROGRESS)
-    
-    @classmethod
-    def get_show_album_pbar(cls) -> bool:
-        return cls.get(PRINT_ALBUM_PROGRESS)
-    
-    @classmethod
-    def get_show_artist_pbar(cls) -> bool:
-        return cls.get(PRINT_ARTIST_PROGRESS)
-    
-    @classmethod
-    def get_show_playlist_pbar(cls) -> bool:
-        return cls.get(PRINT_PLAYLIST_PROGRESS)
+    def get_standard_interface(cls) -> bool:
+        return cls.get(STANDARD_INTERFACE)
     
     @classmethod
     def get_show_any_progress(cls) -> bool:
@@ -475,6 +446,26 @@ class Config:
         return cls.get(PRINT_DOWNLOAD_PROGRESS) or cls.get(PRINT_URL_PROGRESS) \
            or cls.get(PRINT_ALBUM_PROGRESS) or cls.get(PRINT_ARTIST_PROGRESS) \
         or cls.get(PRINT_PLAYLIST_PROGRESS)
+    
+    @classmethod
+    def get_show_download_pbar(cls) -> bool:
+        return cls.get_show_any_progress() and cls.get(PRINT_DOWNLOAD_PROGRESS)
+    
+    @classmethod
+    def get_show_url_pbar(cls) -> bool:
+        return cls.get_show_any_progress() and cls.get(PRINT_URL_PROGRESS)
+    
+    @classmethod
+    def get_show_album_pbar(cls) -> bool:
+        return cls.get_show_any_progress() and cls.get(PRINT_ALBUM_PROGRESS)
+    
+    @classmethod
+    def get_show_artist_pbar(cls) -> bool:
+        return cls.get_show_any_progress() and cls.get(PRINT_ARTIST_PROGRESS)
+    
+    @classmethod
+    def get_show_playlist_pbar(cls) -> bool:
+        return cls.get_show_any_progress() and cls.get(PRINT_PLAYLIST_PROGRESS)
     
     @classmethod
     def get_export_m3u8(cls) -> bool:
@@ -491,14 +482,6 @@ class Config:
     @classmethod
     def get_max_filename_length(cls) -> int:
         return cls.get(MAX_FILENAME_LENGTH)
-    
-    @classmethod
-    def get_save_lyrics_tags(cls) -> bool:
-        return cls.get(MD_SAVE_LYRICS)
-    
-    @classmethod
-    def get_always_check_lyrics(cls) -> bool:
-        return cls.get(ALWAYS_CHECK_LYRICS)
     
     @classmethod
     def get_m3u8_location(cls) -> PurePath | None:
@@ -519,6 +502,9 @@ class Config:
     
     @classmethod
     def get_download_parent_album(cls) -> bool:
+        if Zotify.CONFIG.get_bypass_metadata():
+            return False
+        
         return cls.get(DOWNLOAD_PARENT_ALBUM)
     
     @classmethod
@@ -555,10 +541,6 @@ class Config:
         return re.compile(cls.get(REGEX_EPISODE_SKIP), re.I)
     
     @classmethod
-    def get_lyrics_header(cls) -> bool:
-        return cls.get(LYRICS_MD_HEADER)
-    
-    @classmethod
     def get_strict_library_verify(cls) -> bool:
         return cls.get(STRICT_LIBRARY_VERIFY)
     
@@ -586,50 +568,57 @@ class Config:
         return ffmpeg_args
     
     @classmethod
-    def get_standard_interface(cls) -> bool:
-        return cls.get(STANDARD_INTERFACE)
+    def get_lyrics_to_file(cls) -> bool:
+        return cls.get(LYRICS_TO_FILE)
+    
+    @classmethod
+    def get_lyrics_to_metadata(cls) -> bool:
+        return cls.get(LYRICS_TO_METADATA)
+    
+    @classmethod
+    def get_lyrics_location(cls) -> PurePath | None:
+        if cls.get(LYRICS_LOCATION) == '':
+            # Use OUTPUT path as default location
+            return None
+        else:
+            lyrics_path = cls.get(LYRICS_LOCATION)
+            if lyrics_path[0] == ".":
+                lyrics_path = cls.get_root_path() / PurePath(lyrics_path).relative_to(".")
+            lyrics_path = PurePath(Path(lyrics_path).expanduser())
+        
+        return lyrics_path
     
     @classmethod
     def get_lyrics_filename(cls) -> str:
-        return cls.get(LYRICS_FILENAME)
+        return cls.get(OUTPUT_LYRICS)
+    
+    @classmethod
+    def get_always_check_lyrics(cls) -> bool:
+        return cls.get(ALWAYS_CHECK_LYRICS)
+    
+    @classmethod
+    def get_lyrics_header(cls) -> bool:
+        return cls.get(LYRICS_MD_HEADER)
+    
+    @classmethod
+    def get_bypass_metadata(cls) -> bool:
+        return cls.get(BYPASS_MD_API)
 
 
 class Zotify:
+    CONFIG: Config         = Config()
     OAUTH: OAuth           = None
     SESSION: Session       = None
+    TOTAL_API_CALLS: int   = None
+    DATETIME_LAUNCH: str   = None
+    LOGGER: logging.Logger = None
+    LOGFILE: Path          = None
     DOWNLOAD_QUALITY       = None
     DOWNLOAD_BITRATE       = None
-    DATETIME_LAUNCH: str   = None
-    LOGFILE: Path          = None
-    LOGGER: logging.Logger = None
-    TOTAL_API_CALLS: int   = None
-    CONFIG: Config         = Config()
-    
-    def __init__(self, args) -> None:
-        Zotify.start()
-        Zotify.CONFIG.load(args)
-        
-        # Handle sub-library logging
-        Zotify.LOGFILE = Path(Zotify.CONFIG.get_root_path() / 
-                         ("zotify_" + ("DEBUG_" if Zotify.CONFIG.debug() else "") + f"{Zotify.DATETIME_LAUNCH}.log"))
-        Printer.hashtaged(PrintChannel.DEBUG, f"{Zotify.LOGFILE.name} logging to {Zotify.LOGFILE.resolve().parent}")
-        logging.basicConfig(level=logging.DEBUG if Zotify.CONFIG.debug() else logging.CRITICAL,
-                            filemode="x", filename=Zotify.LOGFILE)
-        
-        with Loader("Logging in...", PrintChannel.MANDATORY):
-            Zotify.login(args)
-        Zotify.LOGGER = logging.getLogger("zotify.debug")
-        
-        Printer.debug("Session Initialized Successfully")
-        quality, bitrate = self.get_download_quality(Zotify.CONFIG.get_download_qual_pref())
-        Zotify.DOWNLOAD_QUALITY = quality
-        Zotify.DOWNLOAD_BITRATE = bitrate
     
     @classmethod
     def start(cls) -> None:
-        if not Zotify.TOTAL_API_CALLS:
-            Printer.splash() 
-        else:
+        if Zotify.TOTAL_API_CALLS:
             Printer.debug(f"Total API Calls: {Zotify.TOTAL_API_CALLS}")
         Zotify.DATETIME_LAUNCH = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         Zotify.TOTAL_API_CALLS = 0
@@ -720,6 +709,28 @@ class Zotify:
         return format_filter(quality), bitrate
     
     @classmethod
+    def configure(cls, args):
+        Printer.splash()
+        Zotify.start()
+        Zotify.CONFIG.load(args)
+        
+        # Handle sub-library logging
+        Zotify.LOGFILE = Path(Zotify.CONFIG.get_root_path() / 
+                         ("zotify_" + ("DEBUG_" if Zotify.CONFIG.debug() else "") + f"{Zotify.DATETIME_LAUNCH}.log"))
+        Printer.hashtaged(PrintChannel.DEBUG, f"{Zotify.LOGFILE.name} logging to {Zotify.LOGFILE.resolve().parent}")
+        logging.basicConfig(level=logging.DEBUG if Zotify.CONFIG.debug() else logging.CRITICAL,
+                            filemode="x", filename=Zotify.LOGFILE)
+        
+        with Loader("Logging in...", PrintChannel.MANDATORY):
+            Zotify.login(args)
+        Zotify.LOGGER = logging.getLogger("zotify.debug")
+        
+        Printer.debug("Session Initialized Successfully")
+        quality, bitrate = cls.get_download_quality(Zotify.CONFIG.get_download_qual_pref())
+        Zotify.DOWNLOAD_QUALITY = quality
+        Zotify.DOWNLOAD_BITRATE = bitrate
+    
+    @classmethod
     def get_content_stream(cls, content) -> LoadedStream | None:
         from zotify.api import DLContent, Track, Episode
         content: DLContent = content
@@ -764,15 +775,18 @@ class Zotify:
         return
     
     @classmethod
-    def choose_token(cls):
-        if cls.OAUTH:
-            return cls.OAUTH.token() # Developer API
-        return cls.SESSION.tokens().get_token(*SCOPES).access_token # login5
-    
-    @classmethod
     def invoke_url(cls, url: str, params: dict | None = None, expectFail: bool = False) -> tuple[str, dict]:
+        if cls.CONFIG.get_bypass_metadata():
+            Printer.hashtaged(PrintChannel.MANDATORY, 'METADATA BYPASS ENABLED - API REQUESTS NON-FUNCTIONAL')
+            return ("", {"error": {"status": "Disabled", "message": "No request sent"}})
+        
+        def choose_token():
+            if cls.OAUTH:
+                return cls.OAUTH.token() # Developer API
+            return cls.SESSION.tokens().get_token(*SCOPES).access_token # login5
+        
         headers = {
-            'Authorization': f'Bearer {cls.choose_token()}',
+            'Authorization': f'Bearer {choose_token()}',
             'Accept-Language': f'{cls.CONFIG.get_language()}',
             'Accept': 'application/json',
             'app-platform': 'WebPlayer',

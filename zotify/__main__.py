@@ -9,7 +9,7 @@ import argparse
 
 from zotify import __version__
 from zotify.app import client
-from zotify.config import CONFIG_VALUES, DEPRECIATED_CONFIGS
+from zotify.config import Zotify, CONFIG_VALUES, DEPRECIATED_CONFIGS
 from zotify.termoutput import Printer
 
 
@@ -138,10 +138,9 @@ def main():
                             default=None,
                             )
     
-    parser.set_defaults(func=client)
-    
     args = parser.parse_args()
-    args.func(args, modes)
+    Zotify.configure(args)
+    client(args, modes)
 
 
 if __name__ == '__main__':

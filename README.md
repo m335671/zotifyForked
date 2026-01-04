@@ -153,36 +153,37 @@ Set arguments in the commandline like this: `-ie False` or `--codec mp3`. Wrap c
 | `SKIP_EXISTING`              | `-ie`, `--skip-existing`            | Skip songs already present in the expected output directory                             | True           |
 | `SKIP_PREVIOUSLY_DOWNLOADED` | `-ip`, `--skip-prev-downloaded`     | Use the global song_archive file to skip previously downloaded songs                    | False          |
 
-| Playlist File Config Key     | Command Line Config Flag            | Description                                                                  | Default Value             |
+| Playlist File Options        | Command Line Config Flag            | Description                                                                  | Default Value             |
 |------------------------------|-------------------------------------|------------------------------------------------------------------------------|---------------------------|
 | `EXPORT_M3U8`                | `-e`, `--export-m3u8`               | Export tracks/albums/episodes/playlists with an accompanying .m3u8 file      | False                     |
 | `M3U8_LOCATION`              | `--m3u8-location`                   | Directory where .m3u8 files are saved, `""` being the output directory       | `""`                      |
 | `M3U8_REL_PATHS`             | `--m3u8-relative-paths`             | List .m3u8 track paths relative to the .m3u8 file's directory                | True                      |
 | `LIKED_SONGS_ARCHIVE_M3U8`   | `--liked-songs-archive-m3u8`        | Use cumulative/archiving method when exporting .m3u8 file for Liked Songs    | True                      |
 
-| Lyric File Options           | Command Line Config Flag            | Description                                                                              | Default Value |
+| Lyrics Options               | Command Line Config Flag            | Description                                                                              | Default Value |
 |------------------------------|-------------------------------------|------------------------------------------------------------------------------------------|---------------|
-| `DOWNLOAD_LYRICS`            | `--download-lyrics`                 | Whether lyrics should be downloaded (synced, with unsynced as fallback)                  | True          |
+| `LYRICS_TO_METADATA`         | `--lyrics-to-metadata`              | Whether lyrics should be fetched and written to audio file tag metadata                  | True          |
+| `LYRICS_TO_FILE`             | `--lyrics-to-file`                  | Whether lyrics should be fetched and written to a .lrc file                              | True          |
 | `LYRICS_LOCATION`            | `--lyrics-location`                 | Directory where .lrc files are saved, `""` being the output directory                    | `""`          |
-| `LYRICS_FILENAME`            | `--lyrics-filename`                 | Filename pattern for .lrc files, `""` being the Track's output pattern      | See [Output Format Examples](#example-output-values) |
+| `OUTPUT_LYRICS`              | `-oy`, `--output-lyrics`            | Output file pattern for .lrc files, `""` being the Track's output pattern  | See [Output Format Examples](#example-output-values) |
 | `ALWAYS_CHECK_LYRICS`        | `--always-check-lyrics`             | Always download a song's lyrics, even when skipped (unless `OPTIMIZED_DOWNLOADING`)      | False         |
-| `LYRICS_MD_HEADER`           | `--lyrics-md-header`                | Include optional metadata ([see tags here](https://en.wikipedia.org/wiki/LRC_(file_format)#Core_format)) at the start of a .lrc file                     | False                     |
+| `LYRICS_MD_HEADER`           | `--lyrics-md-header`                | Include track metadata to a .lrc file([see tags here](https://en.wikipedia.org/wiki/LRC_(file_format)#Core_format)) at the start of a .lrc file | False                     |
 
 | Metadata Options             | Command Line Config Flag            | Description                                                                              | Default Value |
 |------------------------------|-------------------------------------|------------------------------------------------------------------------------------------|---------------|
+| `BYPASS_MD_API`              | `--bypass-metadata-api`             | Whether API calls should be disabled (can only download Tracks or Episodes in URL mode)  | False         |
 | `LANGUAGE`                   | `--language`                        | Language in which metadata/tags are requested                                            | en            |
-| `STRICT_LIBRARY_VERIFY`      | `--strict-library-verify`           | Whether unreliable tags should be forced to match when verifying local library           | True          |
 | `MD_DISC_TRACK_TOTALS`       | `--md-disc-track-totals`            | Whether track totals and disc totals should be saved in metadata                         | True          |
 | `MD_SAVE_GENRES`             | `--md-save-genres`                  | Whether genres should be saved in metadata                                               | True          |
 | `MD_ALLGENRES`               | `--md-allgenres`                    | Save all relevant genres in metadata                                                     | False         |
 | `MD_GENREDELIMITER`          | `--md-genredelimiter`               | Delimiter character to split genres in metadata, use `""` if array-like tags desired     | `", "`        |
 | `MD_ARTISTDELIMITER`         | `--md-artistdelimiter`              | Delimiter character to split artists in metadata, use `""` if array-like tags desired    | `", "`        |
-| `MD_SAVE_LYRICS`             | `--md-save-lyrics`                  | Whether lyrics should be saved in metadata, requires `--download-lyrics` be True         | True          |
+| `SEARCH_QUERY_SIZE`          | `--search-query-size`               | Number of items to fetch per category when performing a search                           | 10            |
+| `STRICT_LIBRARY_VERIFY`      | `--strict-library-verify`           | Whether unreliable tags should be forced to match when verifying local library           | True          |
 | `ALBUM_ART_JPG_FILE`         | `--album-art-jpg-file`              | Save album art as a separate .jpg file                                                   | False         |
 
 | API Options                  | Command Line Config Flag            | Description                                                                  | Default Value             |
 |------------------------------|-------------------------------------|------------------------------------------------------------------------------|---------------------------|
-| `SEARCH_QUERY_SIZE`          | `--search-query-size`               | Number of items to fetch per category when performing a search               | 10                        |
 | `RETRY_ATTEMPTS`             | `--retry-attempts`                  | Number of times to retry failed API requests                                 | 1                         |
 | `CHUNK_SIZE`                 | `--chunk-size`                      | Chunk size for downloading                                                   | 20000                     |
 | `REDIRECT_ADDRESS`           | `--redirect-address`                | Local callback point for OAuth login requests (port is handled internally)   | 127.0.0.1                 |
@@ -262,7 +263,7 @@ The value is relative to the `ROOT_PATH` directory and may contain the following
 
 `OUTPUT_LIKED_SONGS`    :   `Liked Songs/{artist}_{song_name}`
 
-`LYRICS_FILENAME`       :   `{artist}_{song_name}`
+`OUTPUT_LYRICS`         :   `{artist}_{song_name}`
 
 ## Search Query Formatting
 
@@ -361,18 +362,18 @@ If you see this, don't worry! Recent API changes have introduced rate limits, wh
 
 </summary>
 
-Currently no user has reported their account getting banned after using Zotify.
+Only one user has ever reported an account getting suspended after using Zotify, and this only occurred after ***several days** of non-stop usage*.
 
-It is recommended you use Zotify with a burner account.
-Alternatively, there is a configuration option labeled `DOWNLOAD_REAL_TIME`, this limits the download speed to the duration of the song being downloaded thus appearing less suspicious.
-This option is much slower and is only recommended for premium users who wish to download songs in 320kbps without buying premium on a burner account.
+Zotify is recommended for use with a burner account, in reasonable batches of content, for reasonable periods of time.
+
+Ultimately, you use this program at your own risk.
 
 </details>
 
 ## Disclaimer
 
-Zotify is intended to be used in compliance with DMCA, Section 1201, for educational, private and fair use. \
-Zotify contributors are not responsible for any misuse of the program or source code.
+Zotify is intended to be used in compliance with DMCA, Section 1201, for educational, private, and fair use. \
+Zotify contributors are not responsible for any misuse of this program or source code.
 
 ## Contributing
 

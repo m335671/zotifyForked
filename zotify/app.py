@@ -1,13 +1,15 @@
 from argparse import Namespace, Action
 from pathlib import Path
 
-from zotify.api import Query, LikedSong, UserPlaylist, FollowedArtist, SavedAlbum, VerifyLibrary, fetch_search_display
 from zotify.config import Zotify
 from zotify.termoutput import Printer, PrintChannel
 from zotify.utils import bulk_regex_urls, select
 
 
 def search_and_select(search: str = ""):
+    """ Perform search Queries and allow user to select results """
+    
+    from zotify.api import Query, fetch_search_display
     while not search or search == ' ':
         search = Printer.get_input('Enter search: ')
     
@@ -27,7 +29,9 @@ def search_and_select(search: str = ""):
 
 
 def perform_query(args: Namespace) -> None:
-    """ Connects to download server to perform query """
+    """ Perform Query according to type """
+    from zotify.api import Query, LikedSong, UserPlaylist, FollowedArtist, SavedAlbum, VerifyLibrary
+    
     try:
         if args.urls or args.file_of_urls:
             urls = ""
@@ -42,6 +46,10 @@ def perform_query(args: Namespace) -> None:
             
             if len(urls) > 0:
                 Query(Zotify.DATETIME_LAUNCH).request(urls).execute()
+        
+        elif Zotify.CONFIG.get_bypass_metadata():
+            Printer.hashtaged(PrintChannel.MANDATORY, 'METADATA BYPASS ENABLED - NON-URL MODES NON-FUNCTIONAL')
+            return
         
         elif args.liked_songs:
             LikedSong(Zotify.DATETIME_LAUNCH).execute()
@@ -70,8 +78,7 @@ def perform_query(args: Namespace) -> None:
 
 
 def client(args: Namespace, modes: list[Action]) -> None:
-    """ Loads config, creates Session, and performs queries as needed """
-    Zotify(args)
+    """ Perform Queries as needed """
     
     ask_mode = False
     if any([getattr(args, mode.dest) for mode in modes]):

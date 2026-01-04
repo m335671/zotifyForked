@@ -467,7 +467,7 @@ class Interface:
                     f"Current DLContent: {obj._clsn}\n" +\
                     f"{obj.dashboard()}\n" +\
                     f"\n" +\
-                    f"Status: {obj._dl_status}\n" +\
+                    f"Status: {obj.dl_status}\n" +\
                     f"Total Query Progress: {len({c for c in subc if c.downloaded})}/{len(subc)}\n" +\
                     f"\n" +\
                     f"Last Download Time: {Interface.LAST_DL_TIME}\n" +\
