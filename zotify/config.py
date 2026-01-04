@@ -47,8 +47,13 @@ CONFIG_VALUES = {
     BULK_WAIT_TIME:             { 'default': '1',                       'type': int,    'arg': ('--bulk-wait-time'                       ,) },
     DOWNLOAD_REAL_TIME:         { 'default': 'False',                   'type': bool,   'arg': ('-rt', '--download-real-time'            ,) },
     TEMP_DOWNLOAD_DIR:          { 'default': '',                        'type': str,    'arg': ('-td', '--temp-download-dir'             ,) },
+    
+    # Album/Artist Options
     DOWNLOAD_PARENT_ALBUM:      { 'default': 'False',                   'type': bool,   'arg': ('--download-parent-album'                ,) },
     NO_COMPILATION_ALBUMS:      { 'default': 'False',                   'type': bool,   'arg': ('--no-compilation-albums'                ,) },
+    NO_VARIOUS_ARTISTS:         { 'default': 'False',                   'type': bool,   'arg': ('--no-various-artists'                   ,) },
+    NO_ARTIST_APPEARS_ON:       { 'default': 'False',                   'type': bool,   'arg': ('--no-artist-appears-on'                 ,) },
+    DISCOG_BY_ALBUM_ARTIST:     { 'default': 'False',                   'type': bool,   'arg': ('--discog-by-album-artist'               ,) },
     
     # Regex Options
     REGEX_ENABLED:              { 'default': 'False',                   'type': bool,   'arg': ('--regex-enabled'                        ,) },
@@ -501,13 +506,6 @@ class Config:
         return cls.get(M3U8_REL_PATHS)
     
     @classmethod
-    def get_download_parent_album(cls) -> bool:
-        if Zotify.CONFIG.get_bypass_metadata():
-            return False
-        
-        return cls.get(DOWNLOAD_PARENT_ALBUM)
-    
-    @classmethod
     def get_oauth_address(cls) -> tuple[str, str]:
         redirect_address = cls.get(REDIRECT_ADDRESS)
         if redirect_address:
@@ -515,8 +513,27 @@ class Config:
         return '127.0.0.1'
     
     @classmethod
+    def get_download_parent_album(cls) -> bool:
+        if Zotify.CONFIG.get_bypass_metadata():
+            return False
+        
+        return cls.get(DOWNLOAD_PARENT_ALBUM)
+    
+    @classmethod
     def get_skip_comp_albums(cls) -> bool:
         return cls.get(NO_COMPILATION_ALBUMS)
+    
+    @classmethod
+    def get_skip_various_artists(cls) -> bool:
+        return cls.get(NO_VARIOUS_ARTISTS)
+    
+    @classmethod
+    def get_skip_appears_on_album(cls) -> bool:
+        return cls.get(NO_ARTIST_APPEARS_ON)
+    
+    @classmethod
+    def get_discog_by_album_artist(cls) -> bool:
+        return cls.get(DISCOG_BY_ALBUM_ARTIST)
     
     @classmethod
     def get_regex_enabled(cls) -> bool:
