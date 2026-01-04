@@ -121,23 +121,17 @@ def fetch_search_display(search_query: str) -> list[str]:
 
 
 class Tree():
+    query: Query = None
+    subContent:    set[Content]   = set()
+    allContent:    set[Content]   = set()
+    allContainers: set[Container] = set()
+    
     def __init__(self, parent: Content | Container | None, node: Content | Container):
         self.node = node
         self.parent = parent
         self.branch: list[Content | Container] = (self.parent.tree.branch if self.parent else []) + [self.node,]
-        self.query: Query = self.branch[0]
-        
         self.children: set[Content | Container] = set()
         self.siblings: set[Content | Container] = set()
-        
-        if isinstance(self.node, Query):
-            self.subContent: set[Content] = set()
-            self.allContent: set[Content] = set()
-            self.allContainers: set[Container] = set()
-        else:
-            self.subContent: set[Content] = self.query.tree.subContent
-            self.allContent: set[Content] = self.query.tree.allContent
-            self.allContainers: set[Container] = self.query.tree.allContainers
     
     def __contains__(self, c: Content | Container) -> bool:
         return c in self.branch
@@ -1499,6 +1493,7 @@ class Query(Container):
     _hide_pbar = Zotify.CONFIG.get_show_url_pbar()
     
     def __init__(self, timestamp: str):
+        Tree.query = self
         super().__init__(timestamp, None)
         self.name = "Total Progress"
         self.pbar_stack: list = []
