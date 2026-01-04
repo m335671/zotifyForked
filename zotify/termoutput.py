@@ -5,6 +5,7 @@ from itertools import cycle
 from mutagen import FileType
 from os import get_terminal_size, system
 from pprint import pformat
+from re import split, escape
 from tabulate import tabulate
 from threading import Thread
 from time import sleep
@@ -61,6 +62,25 @@ class Printer:
         return columns
     
     @staticmethod
+    def pretty(obj) -> str:
+        if not isinstance(obj, str):
+            return pformat(obj, indent=2)
+        
+        if "http" in obj:
+            delims = "/?&="
+        else:
+            delims = "\n"
+        
+        pretty_str = ""
+        for substr in split(fr'([{escape(delims)}])', obj):
+            overshoot = len(pretty_str.split("\n")[-1]) + len(substr)
+            if overshoot > int(0.75 * Printer._term_cols()) and substr not in delims:
+                pretty_str += "\n"
+            pretty_str += substr
+        
+        return pretty_str
+    
+    @staticmethod
     def logger(msg: str | dict, channel: PrintChannel | None = None) -> None:
         if channel in {PrintChannel.LOADER}:
             return
@@ -70,7 +90,7 @@ class Printer:
         if isinstance(msg, BaseException):
             msg = "".join(TracebackException.from_exception(msg).format())
         elif isinstance(msg, dict):
-            msg = pformat(msg, indent=2)
+            msg = Printer.pretty(msg)
         msg = "\n\n" + msg.strip() + "\n"
         if channel is PrintChannel.WARNING:
             Zotify.LOGGER.warning(msg)
@@ -116,6 +136,7 @@ class Printer:
     
     @staticmethod
     def _print_prefixes(msg: str, category: PrintCategory, channel: PrintChannel) -> tuple[str, PrintCategory]:
+        
         if category is PrintCategory.HASHTAG:
             if channel in {PrintChannel.WARNING, PrintChannel.ERROR, PrintChannel.API_ERROR,
                            PrintChannel.SKIPPING,}:
@@ -179,7 +200,7 @@ class Printer:
     @staticmethod
     def json_dump(obj: dict, channel: PrintChannel = PrintChannel.ERROR, category: PrintCategory = PrintCategory.JSON) -> None:
         obj = Printer._api_shrink(obj)
-        Printer.new_print(channel, pformat(obj, indent=2), category)
+        Printer.new_print(channel, Printer.pretty(obj), category)
     
     @staticmethod
     def debug(*msg: tuple[str | object]) -> None:

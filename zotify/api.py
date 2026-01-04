@@ -1053,7 +1053,7 @@ class Episode(DLContent):
         return super().check_skippable(check_path_glob=True)
     
     def fetch_partner_url(self) -> str | None:
-        _, resp = Zotify.invoke_url(PARTNER_URL + self.id + '"}&extensions=' + PERSISTED_QUERY)
+        _, resp = Zotify.invoke_url(PARTNER_URL + self.id + '"}&extensions=' + PERSISTED_QUERY, force_login5=False)
         if resp[DATA][EPISODE] is None:
             Printer.hashtaged(PrintChannel.WARNING, 'EPISODE PARTNER DATA MISSING - ASSUMING PLATFORM HOSTED\n' +
                                                    f'Episode_ID: {self.id}')
@@ -1103,7 +1103,7 @@ class Episode(DLContent):
         else:
             try:
                 time_elapsed_dl = self.download_directly(temppath)
-            except RuntimeError as e:
+            except Exception as e:
                 Printer.hashtaged(PrintChannel.ERROR, 'FAILED TO DOWNLOAD EPISODE DIRECTLY')
                 Printer.traceback(e)
                 return

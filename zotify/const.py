@@ -110,16 +110,16 @@ STREAMABLE_PODCAST = 'anon-podcast.scdn.co'
 
 # API Scopes
 SCOPES = [
-    "streaming",
-    "playlist-read-private",
-    "playlist-read-collaborative",
-    "user-follow-read",
-    "user-read-playback-position",
-    "user-top-read",
-    "user-read-recently-played",
-    "user-library-read",
-    "user-read-email",
-    "user-read-private"]
+    'streaming',
+    'playlist-read-private',
+    'playlist-read-collaborative',
+    'user-follow-read',
+    'user-read-playback-position',
+    'user-top-read',
+    'user-read-recently-played',
+    'user-library-read',
+    'user-read-email',
+    'user-read-private']
 
 # System Constants
 LINUX_SYSTEM = 'Linux'
@@ -155,7 +155,7 @@ EXT_MAP = {
 
 # Config Keys
 MANDATORY = 'MANDATORY'
-DEBUG = "DEBUG"
+DEBUG = 'DEBUG'
 ROOT_PATH = 'ROOT_PATH'
 ROOT_PODCAST_PATH = 'ROOT_PODCAST_PATH'
 SKIP_EXISTING = 'SKIP_EXISTING'
@@ -179,7 +179,7 @@ PRINT_ERRORS = 'PRINT_ERRORS'
 PRINT_DOWNLOADS = 'PRINT_DOWNLOADS'
 PRINT_API_ERRORS = 'PRINT_API_ERRORS'
 TEMP_DOWNLOAD_DIR = 'TEMP_DOWNLOAD_DIR'
-MD_DISC_TRACK_TOTALS = "MD_DISC_TRACK_TOTALS"
+MD_DISC_TRACK_TOTALS = 'MD_DISC_TRACK_TOTALS'
 MD_SAVE_GENRES = 'MD_SAVE_GENRES'
 MD_ALLGENRES = 'MD_ALLGENRES'
 MD_GENREDELIMITER = 'MD_GENREDELIMITER'

@@ -775,15 +775,15 @@ class Zotify:
         return
     
     @classmethod
-    def invoke_url(cls, url: str, params: dict | None = None, expectFail: bool = False) -> tuple[str, dict]:
+    def invoke_url(cls, url: str, params: dict | None = None, expectFail: bool = False, force_login5: bool = False) -> tuple[str, dict]:
         if cls.CONFIG.get_bypass_metadata():
             Printer.hashtaged(PrintChannel.MANDATORY, 'METADATA BYPASS ENABLED - API REQUESTS NON-FUNCTIONAL')
             return ("", {"error": {"status": "Disabled", "message": "No request sent"}})
         
-        def choose_token():
-            if cls.OAUTH:
+        def choose_token() -> str:
+            if cls.OAUTH and not force_login5:
                 return cls.OAUTH.token() # Developer API
-            return cls.SESSION.tokens().get_token(*SCOPES).access_token # login5
+            return cls.SESSION.tokens().get_token(*SCOPES).access_token
         
         headers = {
             'Authorization': f'Bearer {choose_token()}',
@@ -807,19 +807,22 @@ class Zotify:
             except json.decoder.JSONDecodeError:
                 responsejson = {"error": {"status": "Unknown", "message": "Received an empty response"}}
             
-            if not responsejson or 'error' in responsejson:
-                if not expectFail: 
-                    Printer.hashtaged(PrintChannel.WARNING, f'API ERROR (TRY {tryCount}) - RETRYING\n' +
-                                                            f'{responsejson["error"]["status"]}: {responsejson["error"]["message"]}')
-                sleep(5 if not expectFail else 1)
-                tryCount += 1
-                continue
-            else:
+            if responsejson and not 'error' in responsejson:
                 return responsetext, responsejson
+            elif not expectFail:
+                Printer.hashtaged(PrintChannel.WARNING, f'API ERROR (TRY {tryCount}) - RETRYING\n' +
+                                                        f'{responsejson["error"]["status"]}:  {responsejson["error"]["message"]}')
+            
+            tryCount += 1
+            if tryCount > cls.CONFIG.get_retry_attempts():
+                break
+            
+            sleep(5 if not expectFail else 1)
         
         if not expectFail:
-            Printer.hashtaged(PrintChannel.API_ERROR, f'API ERROR (TRY {tryCount}) - RETRY LIMIT EXCEDED\n' +
-                                                      f'{responsejson["error"]["status"]}: {responsejson["error"]["message"]}')
+            Printer.hashtaged(PrintChannel.API_ERROR, f'RETRY LIMIT EXCEDED\n' +
+                                                      f'RESPONSE TEXT: {responsetext}\n' +
+                                                      f'URL: {Printer.pretty(url)}')
         
         return responsetext, responsejson
     
