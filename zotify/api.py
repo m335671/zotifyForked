@@ -1343,7 +1343,7 @@ class Album(Container):
         if self.skippable:
             return self.skippable
         
-        return self.parent.check_skippable()
+        return self.skippable if isinstance(self.parent, Track) else self.parent.check_skippable()
     
     def download(self, pbar_stack):
         if Zotify.CONFIG.get_optimized_dl_order():
