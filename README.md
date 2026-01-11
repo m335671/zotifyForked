@@ -85,7 +85,7 @@ If an artist's URL is given, all albums by the specified artist will be download
 | `-c`, `--config-location`           | Specify a directory containing a Zotify `config.json` file (or a filepath to a `.json` file) to load settings  |
 | `-u`, `--username`                  | Account username                                                                                               |
 | `--token`                           | Authentication token                                                                                           |
-| `--client_id`                       | Client ID for a Developer App to reroute metadata API requests through                                         |
+| `--client-id`                       | Client ID for a Developer App to reroute metadata API requests through                                         |
 
 | Command Line Mode Flag (exclusive)  | Mode                                                                                                           |
 |-------------------------------------|----------------------------------------------------------------------------------------------------------------|
