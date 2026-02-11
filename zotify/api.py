@@ -377,7 +377,7 @@ class DLContent(Content):
                     break
         
         self.in_dir_archive = self.id in get_archived_item_ids(path.parent)
-        self.in_global_archive = self.id in get_archived_item_ids()
+        self.in_global_archive = False
         if not Zotify.CONFIG.get_optimized_dl_order():
             Printer.debug("Duplicate Check\n" +
                          f"File Already Exists: {path_exists}\n" +
@@ -695,7 +695,7 @@ class Track(DLContent):
         
         if isinstance(self.parent, Playlist):
             replstrset += [{"{playlist}",}, {"{playlist_id}",}, {"{playlist_number}", "{playlist_num}",},]
-            playlist_number = str(self.parent.tracks_or_eps.index(self) + 1).zfill(2)
+            playlist_number = str(getattr(self.parent, "tracks_or_eps", []).index(self) if hasattr(self.parent, "tracks_or_eps") and self in getattr(self.parent, "tracks_or_eps", []) else 0 + 1).zfill(2)
             repl_mds += [self.parent.name, self.parent.id, playlist_number]
         
         for replstrs, repl_md in zip(replstrset, repl_mds):
