@@ -4,6 +4,7 @@ import json
 import base64
 import sys
 import re
+import os
 import requests
 from librespot.audio import FeederException, LoadedStream
 from librespot.audio.decoders import AudioQuality, SuperAudioFormat, FormatOnlyAudioQuality
@@ -384,7 +385,8 @@ class Config:
             if song_archive_path[0] == ".":
                 song_archive_path = cls.get_root_path() / PurePath(song_archive_path).relative_to(".")
             song_archive = PurePath(Path(song_archive_path).expanduser() / ".song_archive")
-        Path(song_archive.parent).mkdir(parents=True, exist_ok=True)
+        archive_dir = Path(songarchive).parent
+        os.makedirs(archive_dir, exist_ok=True)
         return song_archive
     
     @classmethod
