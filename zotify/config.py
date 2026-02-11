@@ -385,7 +385,7 @@ class Config:
             if song_archive_path[0] == ".":
                 song_archive_path = cls.get_root_path() / PurePath(song_archive_path).relative_to(".")
             song_archive = PurePath(Path(song_archive_path).expanduser() / ".song_archive")
-        archive_dir = Path(songarchive).parent
+        archive_dir = Path(song_archive).parent
         os.makedirs(archive_dir, exist_ok=True)
         return song_archive
     
