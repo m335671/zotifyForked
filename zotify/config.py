@@ -370,24 +370,50 @@ class Config:
     
     @classmethod
     def get_song_archive_location(cls) -> PurePath:
-        if cls.get(SONG_ARCHIVE_LOCATION) == '':
-            system_paths = {
-                'win32': Path.home() / 'AppData/Roaming/Zotify',
-                'linux': Path.home() / '.local/share/zotify',
-                'darwin': Path.home() / 'Library/Application Support/Zotify'
+        if cls.get('SONGARCHIVE_LOCATION'):
+            systempaths = {
+                'win32': Path.home() / "AppData/Roaming/Zotify",
+                'linux': Path.home() / ".local/share/zotify",
+                'darwin': Path.home() / "Library/Application Support/Zotify"
             }
-            if sys.platform not in system_paths:
-                song_archive =  PurePath(Path.cwd() / '.zotify/.song_archive')
+            if sys.platform not in systempaths:
+                song_archive = PurePath(Path.cwd() / ".zotify/.songarchive")
             else:
-                song_archive = PurePath(system_paths[sys.platform] / '.song_archive')
+                song_archive = PurePath(systempaths[sys.platform]) / ".songarchive"
         else:
-            song_archive_path: str = cls.get(SONG_ARCHIVE_LOCATION)
-            if song_archive_path[0] == ".":
-                song_archive_path = cls.get_root_path() / PurePath(song_archive_path).relative_to(".")
-            song_archive = PurePath(Path(song_archive_path).expanduser() / ".song_archive")
+            songarchivepath = str(cls.get('SONGARCHIVE_LOCATION'))
+            if songarchivepath[0] == ".":
+                songarchivepath = cls.get_root_path() / PurePath(songarchivepath).relative_to(".")
+            song_archive = PurePath(Path(songarchivepath).expanduser()) / ".songarchive"
+        
+        # Fix robuste pour FileExistsError
         archive_dir = Path(song_archive).parent
-        os.makedirs(archive_dir, exist_ok=True)
+        try:
+            archive_dir.mkdir(parents=True, exist_ok=True)
+        except FileExistsError:
+            # Vérifier si c'est un fichier au lieu d'un dossier
+            if archive_dir.exists() and not archive_dir.is_dir():
+                # C'est un fichier, le supprimer et recréer comme dossier
+                import shutil
+                if archive_dir.is_symlink():
+                    archive_dir.unlink()
+                elif archive_dir.is_file():
+                    archive_dir.unlink()
+                archive_dir.mkdir(parents=True, exist_ok=True)
+            # Sinon c'est juste une race condition, ignorer
+            elif not archive_dir.exists():
+                # Race condition : le dossier a été supprimé entre temps, réessayer
+                archive_dir.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            # Permissions insuffisantes, utiliser /tmp comme fallback
+            import tempfile
+            print(f"⚠️ Permission denied creating {archive_dir}. Using temporary directory.")
+            archive_dir = Path(tempfile.gettempdir()) / "zotify"
+            archive_dir.mkdir(parents=True, exist_ok=True)
+            song_archive = archive_dir / ".songarchive"
+        
         return song_archive
+
     
     @classmethod
     def get_temp_download_dir(cls) -> str | PurePath:
