@@ -1,4 +1,4 @@
-# This Project is a fork for for my personal use if you have issues or want a reliable Zotify I recommend using the base project : https://github.com/Googolplexed0/zotify
+# This Project is a fork for my personal use if you have issues or want a reliable Zotify I recommend using the base project : https://github.com/Googolplexed0/zotify
 
 
 
