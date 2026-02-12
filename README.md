@@ -1,3 +1,8 @@
+# This Project is a fork for for my personal use if you have issues or want a reliable Zotify I recommend using the base project : https://github.com/Googolplexed0/zotify
+
+
+
+
 # Zotify
 
 ## A highly customizable music and podcast downloader
@@ -323,16 +328,6 @@ Decrease Volume by 50% for the First 30 Seconds       :   `"-af volume=0.5:enabl
 Slow Audio Tempo to 60% (pitch/frequency unaffected)  :   `"-af atempo=0.6"`
 
 Increase Volume and Tempo by 50%                      :   `"-af volume=1.5,atempo=1.5"`
-
-## Docker Usage
-
-### Build a Docker Image from the Dockerfile
-
-`docker build -t zotify .`
-
-### Create and Run a Container from the Docker Image
-
-`docker run -it --rm -p 4381:4381 -v "$PWD/Zotify Music:/root/Music/Zotify Music" -v "$PWD/Zotify Podcasts:/root/Music/Zotify Podcasts" zotify`
 
 ## Podman Usage
 
